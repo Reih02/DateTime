@@ -42,7 +42,14 @@ def server(port_1, port_2, port_3):
                 received_packet = bytearray(client_packet)
                 print(received_packet)
 
+                ### Need to store IP addr and port num of client.
+
                 # packet checks
+                if len(received_packet) != 6:
+                    print("Length of packet not 6 bytes")
+                    break
+                if 
+
 
 
 print(server(1890, 1510, 6390))
