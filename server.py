@@ -1,4 +1,6 @@
 import select
+import time
+from datetime import date
 from socket import *
 
 def server(port_1, port_2, port_3):
@@ -55,6 +57,18 @@ def server(port_1, port_2, port_3):
                 and ((received_packet[4] << 8) + received_packet[5]) != 0x0002:
                     print("RequestType field incorrect")
                     break
+                # packet accepted
+
+                # checks whether client wants current date or current time
+                if ((received_packet[4] << 8) + received_packet[5]) == 0x0001:
+                    request_type = "date"
+                elif ((received_packet[4] << 8) + received_packet[5]) == 0x0002:
+                    request_type = "time"
+
+                curr_date = date.today().strftime("%Y : %m : %d")
+                curr_time = time.strftime("%H : %M") 
+
+
 
 
 
