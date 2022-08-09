@@ -28,27 +28,33 @@ def server(port_1, port_2, port_3):
 
     # listen for incoming packets on the sockets
     input_sockets = [server_socket_1, server_socket_2, server_socket_3]
-    output_sockets = []
     while True:
-        readable, writable, exceptional = select.select(input_sockets, output_sockets, input_sockets)
+        # listen over sockets
+        readable, writable, error_sockets = select.select(input_sockets, [], [])
         for r in readable:
+            # incoming data on socket
             if r in input_sockets:
                 # packet received
                 receiving_socket = r # used for knowing which language client wants
-                conn, client_addr = r.accept()
-                print(client_addr)
-                # receives packet with buffer size of 1024
-                client_packet = r.recvfrom(1024)
-                received_packet = bytearray(client_packet)
+                client_packet = r.recvfrom(1024) # receives packet with buffer size of 1024
+                message, client_address = client_packet
+                received_packet = bytearray(message)
                 print(received_packet)
-
-                ### Need to store IP addr and port num of client.
 
                 # packet checks
                 if len(received_packet) != 6:
                     print("Length of packet not 6 bytes")
                     break
-                if 
+                if ((received_packet[0] << 8) + received_packet[1]) != 0x497E:
+                    print("MagicNo field incorrect")
+                    break
+                if ((received_packet[2] << 8) + received_packet[3]) != 0x0001:
+                    print("PacketType field incorrect")
+                    break
+                if ((received_packet[4] << 8) + received_packet[5]) != 0x0001 \
+                and ((received_packet[4] << 8) + received_packet[5]) != 0x0002:
+                    print("RequestType field incorrect")
+                    break
 
 
 
