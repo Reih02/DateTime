@@ -38,76 +38,79 @@ def server(port_1, port_2, port_3):
         readable, writable, error_sockets = select.select(input_sockets, [], [])
         for r in readable:
             # incoming data on socket
-            if r in input_sockets:
-                # packet received
-                receiving_socket = input_sockets.index(r) + 1 # used for knowing which language client wants
-                client_packet = r.recvfrom(1024) # receives packet with buffer size of 1024
-                message, client_address = client_packet
-                received_packet = bytearray(message)
+            #if r in input_sockets:
+            # packet received
+            receiving_socket = input_sockets.index(r) + 1 # used for knowing
+                                                          # which language
+                                                          # client wants
+            client_packet = r.recvfrom(1024) # receives packet with buffer
+                                             # size of 1024
+            message, client_address = client_packet
+            received_packet = bytearray(message)
 
-                # packet checks
-                if len(received_packet) != 6:
-                    print("Length of packet not 6 bytes")
-                    break
-                if ((received_packet[0] << 8) + received_packet[1]) != MAGICNO:
-                    print("MagicNo field incorrect")
-                    break
-                if ((received_packet[2] << 8) + received_packet[3]) != 0x0001:
-                    print("PacketType field incorrect")
-                    break
-                if ((received_packet[4] << 8) + received_packet[5]) != 0x0001 \
-                and ((received_packet[4] << 8) + received_packet[5]) != 0x0002:
-                    print("RequestType field incorrect")
-                    break
-                # packet accepted
+            # packet checks
+            if len(received_packet) != 6:
+                print("Length of packet not 6 bytes")
+                break
+            if ((received_packet[0] << 8) + received_packet[1]) != MAGICNO:
+                print("MagicNo field incorrect")
+                break
+            if ((received_packet[2] << 8) + received_packet[3]) != 0x0001:
+                print("PacketType field incorrect")
+                break
+            if ((received_packet[4] << 8) + received_packet[5]) != 0x0001 \
+            and ((received_packet[4] << 8) + received_packet[5]) != 0x0002:
+                print("RequestType field incorrect")
+                break
+            # packet accepted
 
-                # checks whether client wants current date or current time
-                if ((received_packet[4] << 8) + received_packet[5]) == 0x0001:
-                    request_type = "date"
-                elif ((received_packet[4] << 8) + received_packet[5]) == 0x0002:
-                    request_type = "time"
+            # checks whether client wants current date or current time
+            if ((received_packet[4] << 8) + received_packet[5]) == 0x0001:
+                request_type = "date"
+            elif ((received_packet[4] << 8) + received_packet[5]) == 0x0002:
+                request_type = "time"
 
-                if receiving_socket == 1:
-                    chosen_language = "english"
-                    language_code = 0x0001
-                elif receiving_socket == 2:
-                    chosen_language = "maori"
-                    language_code = 0x0002
-                elif receiving_socket == 3:
-                    chosen_language = "german"
-                    language_code = 0x0003
+            if receiving_socket == 1:
+                chosen_language = "english"
+                language_code = 0x0001
+            elif receiving_socket == 2:
+                chosen_language = "maori"
+                language_code = 0x0002
+            elif receiving_socket == 3:
+                chosen_language = "german"
+                language_code = 0x0003
 
-                # prepare DT-Response packet
-                text = textual_repr(chosen_language, request_type)
-                if len(text) > 255:
-                    print("Text too long")
-                    break
+            # prepare DT-Response packet
+            text = textual_repr(chosen_language, request_type)
+            if len(text) > 255:
+                print("Text too long")
+                break
 
-                # initialise all current date/time values
-                year, month, day, hour, minute = date_time_info()
+            # initialise all current date/time values
+            year, month, day, hour, minute = date_time_info()
 
-                ### maybe need a buffer?? ###
+            ### maybe need a buffer?? ###
 
-                # put values into corresponding amount of bytes for packet
-                magic_number = MAGICNO.to_bytes(2, 'big')
-                packet_type = 0x0002.to_bytes(2, 'big')
-                language_code = language_code.to_bytes(2, 'big')
-                year = year.to_bytes(2, 'big')
-                month = month.to_bytes(1, 'big')
-                day = day.to_bytes(1, 'big')
-                hour = hour.to_bytes(1, 'big')
-                minute = minute.to_bytes(1, 'big')
-                length = len(text).to_bytes(1, 'big')
-                text = text.to_bytes((text.bit_length() + 7) // 8, 'big')
+            # put values into corresponding amount of bytes for packet
+            magic_number = MAGICNO.to_bytes(2, 'big')
+            packet_type = 0x0002.to_bytes(2, 'big')
+            language_code = language_code.to_bytes(2, 'big')
+            year = year.to_bytes(2, 'big')
+            month = month.to_bytes(1, 'big')
+            day = day.to_bytes(1, 'big')
+            hour = hour.to_bytes(1, 'big')
+            minute = minute.to_bytes(1, 'big')
+            length = len(text).to_bytes(1, 'big')
+            text = text.to_bytes((text.bit_length() + 7) // 8, 'big')
 
-                bytes = magic_number + packet_type + language_code + \
-                        year + month + day + hour + minute + length + text
+            bytes = magic_number + packet_type + language_code + \
+                    year + month + day + hour + minute + length + text
 
-                # create response packet as a bytearray from bytes
-                response_packet = bytearray(list(bytes))
+            # create response packet as a bytearray from bytes
+            response_packet = bytearray(list(bytes))
 
-                # send response packet back to client on receiving socket
-                r.sendto(response_packet, client_address)
+            # send response packet back to client on receiving socket
+            r.sendto(response_packet, client_address)
 
 
 
@@ -139,7 +142,8 @@ def textual_repr(language, request_type):
     elif language == "maori":
         if request_type == "date":
             eng_month = time.strftime("%B")
-            text = time.strftime("Ko te ra o tenei ra ko {} %d, %Y").format(months[eng_month][0])
+            text = time.strftime("Ko te ra o tenei ", \
+                                 "ra ko {} %d, %Y").format(months[eng_month][0])
 
         elif request_type == "time":
             text = time.strftime("Ko te wa o tenei wa %H:%M")
@@ -147,7 +151,8 @@ def textual_repr(language, request_type):
     elif language == "german":
         if request_type == "date":
             eng_month = time.strftime("%B")
-            text = time.strftime("Heute ist der %d. {} %Y").format(months[eng_month][1])
+            text = time.strftime("Heute ist der ", \
+                                 "%d. {} %Y").format(months[eng_month][1])
 
         elif request_type == "time":
             text = time.strftime("Die Uhrzeit ist %H:%M")
