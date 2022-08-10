@@ -5,6 +5,7 @@ from socket import *
 MAGICNO = 0x497E
 
 def server(port_1, port_2, port_3):
+    '''Main server function'''
     port_vars = [port_1, port_2, port_3]
     if len(set(port_vars)) != len(port_vars):
         # not all unique port values
@@ -22,16 +23,19 @@ def server(port_1, port_2, port_3):
         server_socket_3 = socket(AF_INET, SOCK_DGRAM)
 
         # binds said sockets to the three port numbers
-        server_socket_1.bind(('localhost', port_1))
-        server_socket_2.bind(('localhost', port_2))
-        server_socket_3.bind(('localhost', port_3))
+        server_socket_1.bind((INADDR ANY, port_1))
+        server_socket_2.bind((INADDR ANY, port_2))
+        server_socket_3.bind((INADDR ANY, port_3))
     except:
         print("Socket binding failed.")
         quit()
 
+    print("Socket binding successful")
+
     # listen for incoming packets on the sockets
     input_sockets = [server_socket_1, server_socket_2, server_socket_3]
     while True:
+        print("Listening over sockets...")
         # listen over sockets
         readable, writable, error_sockets = select.select(input_sockets, [], [])
         for r in readable:
@@ -84,7 +88,7 @@ def server(port_1, port_2, port_3):
                 # initialise all current date/time values
                 year, month, day, hour, minute = date_time_info()
 
-                # maybe need a buffer??
+                ### maybe need a buffer?? ###
 
                 # put values into corresponding amount of bytes for packet
                 magic_number = MAGICNO.to_bytes(2, 'big')
@@ -104,7 +108,7 @@ def server(port_1, port_2, port_3):
                 # create response packet as a bytearray from bytes
                 response_packet = bytearray(list(bytes))
 
-                # send response packet on receiving socket
+                # send response packet back to client on receiving socket
                 r.sendto(response_packet, client_address)
 
 
@@ -150,7 +154,7 @@ def textual_repr(language, request_type):
         elif request_type == "time":
             text = time.strftime("Die Uhrzeit ist %H:%M")
 
-    return bytearray(text.encode())
+    return bytearray(text.encode('utf-8'))
 
 
 def date_time_info():
@@ -180,4 +184,9 @@ def date_time_info():
 
     return (year, month, day, hour, minute)
 
-print(server(1890, 1510, 6390))
+print("Please specify the three ports the server should operate on:")
+print("NOTE: Port numbers must be between 1024 and 64000")
+port1 = int(input("Port 1: "))
+port2 = int(input("Port 2: "))
+port3 = int(input("Port 3: "))
+server(port1, port2, port3)
