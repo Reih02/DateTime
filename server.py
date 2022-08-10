@@ -101,7 +101,7 @@ def server(port_1, port_2, port_3):
             hour = hour.to_bytes(1, 'big')
             minute = minute.to_bytes(1, 'big')
             length = len(text).to_bytes(1, 'big')
-            text = text.to_bytes((text.bit_length() + 7) // 8, 'big')
+            #text = text.to_bytes((text.bit_length() + 7) // 8, 'big')
 
             bytes = magic_number + packet_type + language_code + \
                     year + month + day + hour + minute + length + text
