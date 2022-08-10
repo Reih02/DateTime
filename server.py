@@ -1,3 +1,4 @@
+import sys
 import select
 import time
 from socket import *
@@ -9,12 +10,10 @@ def server(port_1, port_2, port_3):
     port_vars = [port_1, port_2, port_3]
     if len(set(port_vars)) != len(port_vars):
         # not all unique port values
-        print("All port numbers must be unique!")
-        quit()
+        sys.exit("All port numbers must be unique!")
     elif not all(x >= 1024 and x <= 64000 for x in port_vars):
         # checks if any port values are less than 1024 or greater than 64000
-        print("All port numbers must be between 1024 and 64000!")
-        quit()
+        sys.exit("All port numbers must be between 1024 and 64000!")
 
     try:
         # creates three UDP sockets using IPv4
@@ -23,12 +22,11 @@ def server(port_1, port_2, port_3):
         server_socket_3 = socket(AF_INET, SOCK_DGRAM)
 
         # binds said sockets to the three port numbers
-        server_socket_1.bind((INADDR ANY, port_1))
-        server_socket_2.bind((INADDR ANY, port_2))
-        server_socket_3.bind((INADDR ANY, port_3))
+        server_socket_1.bind((INADDR_ANY, port_1))
+        server_socket_2.bind((INADDR_ANY, port_2))
+        server_socket_3.bind((INADDR_ANY, port_3))
     except:
-        print("Socket binding failed.")
-        quit()
+        sys.exit("Socket binding failed.")
 
     print("Socket binding successful")
 
