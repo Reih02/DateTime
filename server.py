@@ -10,10 +10,10 @@ def server(port_1, port_2, port_3):
     port_vars = [port_1, port_2, port_3]
     if len(set(port_vars)) != len(port_vars):
         # not all unique port values
-        sys.exit("All port numbers must be unique!")
+        sys.exit("ERROR: All port numbers must be unique!")
     elif not all(x >= 1024 and x <= 64000 for x in port_vars):
         # checks if any port values are less than 1024 or greater than 64000
-        sys.exit("All port numbers must be between 1024 and 64000!")
+        sys.exit("ERROR: All port numbers must be between 1024 and 64000!")
 
     try:
         # creates three UDP sockets using IPv4
@@ -22,11 +22,12 @@ def server(port_1, port_2, port_3):
         server_socket_3 = socket(AF_INET, SOCK_DGRAM)
 
         # binds said sockets to the three port numbers
-        server_socket_1.bind((INADDR_ANY, port_1))
-        server_socket_2.bind((INADDR_ANY, port_2))
-        server_socket_3.bind((INADDR_ANY, port_3))
-    except:
-        sys.exit("Socket binding failed.")
+        server_socket_1.bind(('127.0.0.1', port_1))
+        server_socket_2.bind(('127.0.0.1', port_2))
+        server_socket_3.bind(('127.0.0.1', port_3))
+    except Exception as e:
+        print(e)
+        sys.exit("ERROR: Socket binding failed.")
 
     print("Socket binding successful")
 
@@ -40,6 +41,7 @@ def server(port_1, port_2, port_3):
             # incoming data on socket
             #if r in input_sockets:
             # packet received
+            print("Packet received!")
             receiving_socket = input_sockets.index(r) + 1 # used for knowing
                                                           # which language
                                                           # client wants
@@ -50,17 +52,17 @@ def server(port_1, port_2, port_3):
 
             # packet checks
             if len(received_packet) != 6:
-                print("Length of packet not 6 bytes")
+                print("ERROR: Length of packet not 6 bytes")
                 break
             if ((received_packet[0] << 8) + received_packet[1]) != MAGICNO:
-                print("MagicNo field incorrect")
+                print("ERROR: MagicNo field incorrect")
                 break
             if ((received_packet[2] << 8) + received_packet[3]) != 0x0001:
-                print("PacketType field incorrect")
+                print("ERROR: PacketType field incorrect")
                 break
             if ((received_packet[4] << 8) + received_packet[5]) != 0x0001 \
             and ((received_packet[4] << 8) + received_packet[5]) != 0x0002:
-                print("RequestType field incorrect")
+                print("ERROR: RequestType field incorrect")
                 break
             # packet accepted
 
@@ -83,7 +85,7 @@ def server(port_1, port_2, port_3):
             # prepare DT-Response packet
             text = textual_repr(chosen_language, request_type)
             if len(text) > 255:
-                print("Text too long")
+                print("ERROR: Text too long")
                 break
 
             # initialise all current date/time values
@@ -100,7 +102,7 @@ def server(port_1, port_2, port_3):
             day = day.to_bytes(1, 'big')
             hour = hour.to_bytes(1, 'big')
             minute = minute.to_bytes(1, 'big')
-            length = len(text).to_bytes(1, 'big')
+            length = (13 + len(text)).to_bytes(1, 'big')
             #text = text.to_bytes((text.bit_length() + 7) // 8, 'big')
 
             bytes = magic_number + packet_type + language_code + \
@@ -142,8 +144,7 @@ def textual_repr(language, request_type):
     elif language == "maori":
         if request_type == "date":
             eng_month = time.strftime("%B")
-            text = time.strftime("Ko te ra o tenei ", \
-                                 "ra ko {} %d, %Y").format(months[eng_month][0])
+            text = time.strftime("Ko te ra o tenei ra ko {} %d, %Y").format(months[eng_month][0])
 
         elif request_type == "time":
             text = time.strftime("Ko te wa o tenei wa %H:%M")
@@ -151,8 +152,7 @@ def textual_repr(language, request_type):
     elif language == "german":
         if request_type == "date":
             eng_month = time.strftime("%B")
-            text = time.strftime("Heute ist der ", \
-                                 "%d. {} %Y").format(months[eng_month][1])
+            text = time.strftime("Heute ist der %d. {} %Y").format(months[eng_month][1])
 
         elif request_type == "time":
             text = time.strftime("Die Uhrzeit ist %H:%M")
@@ -186,6 +186,7 @@ def date_time_info():
     minute = int(minute)
 
     return (year, month, day, hour, minute)
+
 
 print("Please specify the three ports the server should operate on:")
 print("NOTE: Port numbers must be between 1024 and 64000")
