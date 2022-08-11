@@ -35,8 +35,12 @@ def client(request_type, address, port_num):
 
     bytes = magic_number + packet_type + request_type
     request_packet = bytearray(list(bytes))
-    client_socket.sendto(request_packet, server_address)
+    try:
+        client_socket.sendto(request_packet, server_address)
+    except:
+        sys.exit("ERROR: Unable to send request to specified server")
 
+    # blocks socket for receiving packet with a timeout set to 1 second
     readable, writable, error_sockets = select.select([client_socket],
                                                        [], [], 1.0)
     if len(readable) == 0 and len(writable) == 0 and len(error_sockets) == 0:
@@ -44,7 +48,10 @@ def client(request_type, address, port_num):
         sys.exit("ERROR: Timed out waiting for response packet")
     else:
         for r in readable:
-            server_packet = r.recvfrom(1024)
+            try:
+                server_packet = r.recvfrom(1024)
+            except:
+                sys.exit("ERROR: Server closed connection (may be due to invalid port number specified)")
             message, server_address = server_packet
             received_packet = bytearray(message)
 
@@ -93,7 +100,7 @@ def client(request_type, address, port_num):
             if minute < 0 or minute > 59:
                 sys.exit("ERROR: Minute value not within parameters")
 
-            if length != 13 + len(text):
+            if len(received_packet) != 13 + length:
                 sys.exit("ERROR: Length value incorrect")
 
             # decode text from packet

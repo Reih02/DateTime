@@ -25,8 +25,7 @@ def server(port_1, port_2, port_3):
         server_socket_1.bind(('', port_1))
         server_socket_2.bind(('', port_2))
         server_socket_3.bind(('', port_3))
-    except Exception as e:
-        print(e)
+    except:
         sys.exit("ERROR: Socket binding failed.")
 
     print("Socket binding successful")
@@ -91,8 +90,6 @@ def server(port_1, port_2, port_3):
             # initialise all current date/time values
             year, month, day, hour, minute = date_time_info()
 
-            ### maybe need a buffer?? ###
-
             # put values into corresponding amount of bytes for packet
             magic_number = MAGICNO.to_bytes(2, 'big')
             packet_type = 0x0002.to_bytes(2, 'big')
@@ -102,8 +99,7 @@ def server(port_1, port_2, port_3):
             day = day.to_bytes(1, 'big')
             hour = hour.to_bytes(1, 'big')
             minute = minute.to_bytes(1, 'big')
-            length = (13 + len(text)).to_bytes(1, 'big')
-            #text = text.to_bytes((text.bit_length() + 7) // 8, 'big')
+            length = len(text).to_bytes(1, 'big')
 
             bytes = magic_number + packet_type + language_code + \
                     year + month + day + hour + minute + length + text
