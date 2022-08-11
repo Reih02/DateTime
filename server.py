@@ -22,9 +22,9 @@ def server(port_1, port_2, port_3):
         server_socket_3 = socket(AF_INET, SOCK_DGRAM)
 
         # binds said sockets to the three port numbers
-        server_socket_1.bind(('127.0.0.1', port_1))
-        server_socket_2.bind(('127.0.0.1', port_2))
-        server_socket_3.bind(('127.0.0.1', port_3))
+        server_socket_1.bind(('', port_1))
+        server_socket_2.bind(('', port_2))
+        server_socket_3.bind(('', port_3))
     except Exception as e:
         print(e)
         sys.exit("ERROR: Socket binding failed.")

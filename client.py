@@ -107,7 +107,7 @@ def client(request_type, address, port_num):
             print("Date info (year:month:day:hour:minute):", \
                   " {}:{}:{}:{}:{}".format(year, month, day, hour, minute))
             print("Length: {}".format(length))
-            print("Text:\n" + text)
+            print("Text:\n##########\n" + text + "\n##########")
 
 
 request_type = input("Please enter 'date' to request the current date, or 'time' to request the current time from the server: ")
